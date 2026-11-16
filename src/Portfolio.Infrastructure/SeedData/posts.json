@@ -1,0 +1,32 @@
+[
+  {
+    "slug": "zkteco-attendance-sync",
+    "title": "Getting ZKTeco fingerprint punches into an ERP, once each",
+    "excerpt": "How I am connecting the fingerprint terminals at the door to the coaching center ERP without losing a punch or counting one twice.",
+    "category": "Case notes",
+    "layer": "Logic",
+    "tags": ["zkteco", "background-service", "idempotency", "erp"],
+    "leadFigure": "zkteco-sync",
+    "featured": true
+  },
+  {
+    "slug": "tenant-isolation-ef-core",
+    "title": "Keeping organizations apart with one EF Core filter",
+    "excerpt": "Multi-tenancy enforced in one place: the tenant comes from the token, and a global query filter applies it to every query.",
+    "category": ".NET Core",
+    "layer": "Api",
+    "tags": ["ef-core", "multi-tenancy", "asp-net-core", "security"],
+    "leadFigure": "tenant-stack",
+    "featured": true
+  },
+  {
+    "slug": "sql-server-or-postgresql-for-erp",
+    "title": "SQL Server or PostgreSQL for an ERP: the questions I ask",
+    "excerpt": "I run one system on each. The choice comes from where the system runs and what its data looks like, not from the brand.",
+    "category": "SQL Server & PostgreSQL",
+    "layer": "Data",
+    "tags": ["sql-server", "postgresql", "postgis", "erp"],
+    "leadFigure": "db-choice",
+    "featured": true
+  }
+]

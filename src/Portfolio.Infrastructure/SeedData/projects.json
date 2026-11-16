@@ -1,0 +1,42 @@
+[
+  {
+    "id": "coaching-erp",
+    "sortOrder": 1,
+    "title": "Coaching Center ERP",
+    "tags": ["ASP.NET Core", "React", "SQL Server", "ZKTeco"],
+    "status": "Live",
+    "statusLabel": "In daily use",
+    "facts": [{ "label": "Users", "value": "~110 students, 25 staff" }],
+    "summary": "ERP for a Dhaka coaching center: fees, attendance and exams for about 110 students and 25 staff (teachers, administration, support), with ZKTeco fingerprint integration.",
+    "highlights": [
+      { "text": "Fees, attendance and exams" },
+      { "text": "Role-based access and audit trail" },
+      { "text": "Finance chat with encrypted messages" },
+      { "text": "Configurable data retention and archives" },
+      { "text": "ZKTeco fingerprint attendance and door access", "inProgress": true },
+      { "text": "OAuth 2.0 sign-in", "inProgress": true }
+    ],
+    "media": { "type": "fragment", "fragmentId": "attendance-feed" },
+    "tone": "dark"
+  },
+  {
+    "id": "syndicate-saas",
+    "sortOrder": 2,
+    "title": "Land Syndicate SaaS",
+    "tags": ["ASP.NET Core", "React", "PostgreSQL", "PostGIS"],
+    "status": "InDevelopment",
+    "statusLabel": "In development",
+    "facts": [{ "label": "Client", "value": "No live client yet" }],
+    "summary": "A SaaS platform for managing land-pooling syndicates: ownership shares, cash calls, payments and distributions, built for national and international investors.",
+    "highlights": [
+      { "text": "Investor register and ownership shares" },
+      { "text": "Cash calls and payment tracking" },
+      { "text": "Distribution waterfall" },
+      { "text": "Multi-currency with audit trail" },
+      { "text": "Parcel map with mouza, dag and khatian (PostGIS)" },
+      { "text": "Investor portal and document vault" }
+    ],
+    "media": { "type": "fragment", "fragmentId": "parcel-map" },
+    "tone": "stone"
+  }
+]

@@ -1,0 +1,301 @@
+# Requests for every endpoint. Open in VS Code (REST Client) or Visual Studio / Rider.
+# 1. Run "Sign in with password" and copy accessToken into @token below.
+# 2. For MCP calls, create a personal access token and paste it into @pat.
+@baseUrl = http://localhost:5180
+@token = paste-access-token-here
+@pat = pat_paste-token-here
+@postId = 00000000-0000-0000-0000-000000000000
+@designId = 00000000-0000-0000-0000-000000000000
+@groupId = 00000000-0000-0000-0000-000000000000
+@skillId = 00000000-0000-0000-0000-000000000000
+
+### Health
+GET {{baseUrl}}/health
+
+### ---------- Public ----------
+
+### Published posts (drafts never appear)
+GET {{baseUrl}}/api/posts
+
+### One published post (404 for drafts and unknown slugs)
+GET {{baseUrl}}/api/posts/tenant-isolation-ef-core
+
+### Projects
+GET {{baseUrl}}/api/projects
+
+### Figures a post can embed
+GET {{baseUrl}}/api/figures
+
+### Contact form (5 per 10 minutes per IP, then 429)
+POST {{baseUrl}}/api/contact
+Content-Type: application/json
+
+{
+  "kind": "role",
+  "name": "Jane Recruiter",
+  "email": "jane@example.com",
+  "organization": "Example Ltd",
+  "topic": "Senior .NET Developer",
+  "message": "We would like to talk about a full-stack role.",
+  "website": ""
+}
+
+### ---------- Auth ----------
+
+### Sign in with password (dev admin from user-secrets)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "admin@portfolio.test", "password": "see dotnet user-secrets list" }
+
+### Sign in with Google (idToken = credential from the Google button)
+POST {{baseUrl}}/api/auth/google
+Content-Type: application/json
+
+{ "idToken": "eyJ..." }
+
+### Refresh (uses the HttpOnly cookie set at sign-in)
+POST {{baseUrl}}/api/auth/refresh
+
+### Who am I
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{token}}
+
+### Sign out
+POST {{baseUrl}}/api/auth/logout
+
+### ---------- Admin: posts ----------
+
+### All posts incl. drafts
+GET {{baseUrl}}/api/admin/posts
+Authorization: Bearer {{token}}
+
+### Create a draft
+POST {{baseUrl}}/api/admin/posts
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Audit trail rows in the ERP",
+  "excerpt": "How every change is recorded without slowing down the fee desk.",
+  "body": "Intro paragraph.\n\n::layer{id=data}\n\n## The table\n\nText.",
+  "category": "Architecture",
+  "layer": "data",
+  "tags": ["audit-trail", "ef-core"]
+}
+
+### Update
+PUT {{baseUrl}}/api/admin/posts/{{postId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Audit trail rows in the ERP",
+  "excerpt": "Updated excerpt.",
+  "body": "Updated body.",
+  "category": "Architecture",
+  "layer": "data",
+  "tags": ["audit-trail"]
+}
+
+### Publish
+POST {{baseUrl}}/api/admin/posts/{{postId}}/publish
+Authorization: Bearer {{token}}
+
+### Unpublish
+POST {{baseUrl}}/api/admin/posts/{{postId}}/unpublish
+Authorization: Bearer {{token}}
+
+### Delete
+DELETE {{baseUrl}}/api/admin/posts/{{postId}}
+Authorization: Bearer {{token}}
+
+### ---------- Admin: messages and tokens ----------
+
+### Contact messages
+GET {{baseUrl}}/api/admin/messages
+Authorization: Bearer {{token}}
+
+### Create an MCP token (secret shown once)
+POST {{baseUrl}}/api/admin/api-tokens
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "Claude Desktop", "expiresInDays": 90 }
+
+### List tokens
+GET {{baseUrl}}/api/admin/api-tokens
+Authorization: Bearer {{token}}
+
+### ---------- Design gallery (public) ----------
+
+### Visible design items, gallery order (200 with [] until you upload some)
+GET {{baseUrl}}/api/design-posts
+
+### One item's image as WebP (use the imageUrl from the list; cached 1 year, ETag gives 304)
+GET {{baseUrl}}/api/design-posts/{{designId}}/image
+
+### ---------- Skills (public) ----------
+
+### Skill cards with their skills, in order
+GET {{baseUrl}}/api/skills
+
+### ---------- Admin: skills ----------
+
+### All cards (same shape as the public list)
+GET {{baseUrl}}/api/admin/skills
+Authorization: Bearer {{token}}
+
+### Add a card
+POST {{baseUrl}}/api/admin/skills/groups
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "Cloud and DevOps" }
+
+### Rename a card
+PUT {{baseUrl}}/api/admin/skills/groups/{{groupId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "Cloud" }
+
+### Add a skill to a card (icon: a key from SkillIcons.cs, or null)
+POST {{baseUrl}}/api/admin/skills/groups/{{groupId}}/skills
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "Docker", "level": 70, "icon": "docker", "note": null }
+
+### Change a skill (add "groupId" to move it to another card)
+PUT {{baseUrl}}/api/admin/skills/{{skillId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "Docker", "level": 75, "icon": "docker", "note": null }
+
+### New card order (every card id once)
+PUT {{baseUrl}}/api/admin/skills/groups/order
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "ids": ["{{groupId}}"] }
+
+### Delete a skill
+DELETE {{baseUrl}}/api/admin/skills/{{skillId}}
+Authorization: Bearer {{token}}
+
+### Delete a card and its skills
+DELETE {{baseUrl}}/api/admin/skills/groups/{{groupId}}
+Authorization: Bearer {{token}}
+
+### ---------- CV ----------
+
+### Is a CV available? (always 200)
+GET {{baseUrl}}/api/cv/info
+
+### Download the CV (404 when none is uploaded)
+GET {{baseUrl}}/api/cv
+
+### Admin: current CV details (204 when none)
+GET {{baseUrl}}/api/admin/cv
+Authorization: Bearer {{token}}
+
+### Admin: upload or replace the CV (PDF, up to 5 MB)
+PUT {{baseUrl}}/api/admin/cv
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=cv
+
+--cv
+Content-Disposition: form-data; name="file"; filename="cv.pdf"
+Content-Type: application/pdf
+
+< ./cv.pdf
+--cv--
+
+### Admin: remove the CV
+DELETE {{baseUrl}}/api/admin/cv
+Authorization: Bearer {{token}}
+
+### ---------- Admin: dashboard overview ----------
+GET {{baseUrl}}/api/admin/overview
+Authorization: Bearer {{token}}
+
+### ---------- Admin: design gallery ----------
+
+### All items, hidden ones included
+GET {{baseUrl}}/api/admin/design-posts
+Authorization: Bearer {{token}}
+
+### One item
+GET {{baseUrl}}/api/admin/design-posts/{{designId}}
+Authorization: Bearer {{token}}
+
+### Upload (multipart). The file is compressed to WebP, at most 100 KB, aspect ratio kept.
+### Put a real image next to this file (here: sample.jpg) before running it.
+POST {{baseUrl}}/api/admin/design-posts
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=design
+
+--design
+Content-Disposition: form-data; name="caption"
+
+Poster for a campus event
+--design
+Content-Disposition: form-data; name="link"
+
+https://example.com/original-post
+--design
+Content-Disposition: form-data; name="file"; filename="sample.jpg"
+Content-Type: image/jpeg
+
+< ./sample.jpg
+--design--
+
+### Change caption, link and visibility
+PUT {{baseUrl}}/api/admin/design-posts/{{designId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "caption": "Poster for a campus event", "link": null, "isVisible": true }
+
+### Replace the image only (caption and position stay)
+PUT {{baseUrl}}/api/admin/design-posts/{{designId}}/image
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=design
+
+--design
+Content-Disposition: form-data; name="file"; filename="sample.jpg"
+Content-Type: image/jpeg
+
+< ./sample.jpg
+--design--
+
+### Save a new order: every item id once, first item first
+PUT {{baseUrl}}/api/admin/design-posts/order
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "ids": ["{{designId}}"] }
+
+### Delete an item and its image
+DELETE {{baseUrl}}/api/admin/design-posts/{{designId}}
+Authorization: Bearer {{token}}
+
+### ---------- MCP (JSON-RPC over Streamable HTTP) ----------
+
+### List tools
+POST {{baseUrl}}/mcp
+Authorization: Bearer {{pat}}
+Content-Type: application/json
+Accept: application/json, text/event-stream
+
+{ "jsonrpc": "2.0", "id": 1, "method": "tools/list" }
+
+### Call a tool
+POST {{baseUrl}}/mcp
+Authorization: Bearer {{pat}}
+Content-Type: application/json
+Accept: application/json, text/event-stream
+
+{ "jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": { "name": "list_posts", "arguments": {} } }

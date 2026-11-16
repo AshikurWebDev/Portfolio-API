@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <UserSecretsId>51ac7965-497b-4d6a-b7c3-816d5f75857e</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.12" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.12" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.4.0" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.21.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Portfolio.Application\Portfolio.Application.csproj" />
+    <ProjectReference Include="..\Portfolio.Infrastructure\Portfolio.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
