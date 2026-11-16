@@ -1,0 +1,23 @@
+# Shared-server mode: use this together with docker-compose.yml when one VPS hosts
+# several sites behind the edge proxy (deploy/edge/). See deploy/README.md.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.shared.yml up -d --build
+#
+# Changes to the standalone setup:
+#   - the website container publishes no ports; the edge Caddy owns 80/443 and HTTPS
+#   - it serves plain HTTP on :80 inside Docker
+#   - it joins the shared "edge" network as "portfolio-web", the name the edge Caddyfile uses
+services:
+  web:
+    ports: !reset []
+    environment:
+      DOMAIN: ":80"
+    networks:
+      default: {}
+      edge:
+        aliases:
+          - portfolio-web
+
+networks:
+  edge:
+    external: true

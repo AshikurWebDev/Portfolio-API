@@ -230,7 +230,9 @@ Checked on 2026-11-16 against the running API and the production Docker stack.
 | Secrets | Nothing secret in the repository: user-secrets in development, environment variables in production. Options are validated on start-up (`ValidateOnStart`), so a missing JWT key stops the app. | Repository scan |
 | Transport | Behind Caddy: HTTPS only, `nosniff`, `X-Frame-Options: DENY`, strict referrer policy. Forwarded headers give the API the real scheme and client IP. The API container is not published on the host. | Response headers checked |
 
-Not yet exercised: the per-IP rate limit under real traffic behind the production proxy.
+The per-IP rate limit was also checked through two proxies (edge Caddy and the site's Caddy): a client
+sending fake `X-Forwarded-For` values was still limited after 5 messages. Not yet exercised: real traffic
+in production.
 
 ## Feature notes
 
@@ -333,9 +335,15 @@ In production, use environment variables with `__` for `:` (`Jwt__SigningKey`, `
 ## Deployment
 
 `Dockerfile` publishes a Release build into the ASP.NET Core runtime image and runs it as a non-root
-user. [`deploy/`](deploy/README.md) holds the production Docker Compose file (PostgreSQL, this API and the
-website's Caddy image) and a step-by-step guide for a Hostinger VPS, including HTTPS, Google sign-in for
-the live domain, updates and backups.
+user. [`deploy/`](deploy/README.md) holds the production Docker Compose files and a step-by-step guide
+for a Hostinger VPS:
+
+- **Standalone:** this API, PostgreSQL and the website's Caddy image, with Caddy owning HTTPS.
+- **Shared server:** an edge Caddy owns ports 80/443 and certificates for several domains; each site
+  runs behind it on its own Docker network (`docker-compose.shared.yml`, `deploy/edge/`).
+
+The guide covers server hardening (SSH keys, firewall, automatic updates), DNS, Google sign-in for the
+live domain, a Portainer dashboard over an SSH tunnel, updates and nightly database backups.
 
 ## Author
 

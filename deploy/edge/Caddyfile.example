@@ -1,0 +1,27 @@
+# Edge Caddyfile: one block per site. Copy to Caddyfile and adjust the domains and email.
+# Each domain's DNS A record must point at this server before Caddy can get its certificate.
+# After editing:  docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile
+
+{
+	# Let's Encrypt sends expiry warnings here (optional but recommended).
+	email you@example.com
+}
+
+# Portfolio (Portfolio-API repo, started with docker-compose.shared.yml)
+ashikdev.tech {
+	encode zstd gzip
+	reverse_proxy portfolio-web:80
+}
+
+# One address for the site: www sends visitors (and search engines) to the bare domain,
+# so Google sign-in and canonical links only need https://ashikdev.tech.
+www.ashikdev.tech {
+	redir https://ashikdev.tech{uri} permanent
+}
+
+# Educatory ERP: uncomment when its production stack joins the "edge" network
+# under the alias "educatory-web".
+# educatory-example.com {
+# 	encode zstd gzip
+# 	reverse_proxy educatory-web:80
+# }

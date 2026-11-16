@@ -1,0 +1,34 @@
+# Edge proxy for a VPS that hosts several sites (portfolio, Educatory, ...).
+# This is server-level setup, not part of any one app: copy this folder to /opt/edge.
+#
+#   docker network create edge        (once)
+#   cp Caddyfile.example Caddyfile    then put your domains in it
+#   docker compose up -d
+#
+# The only container that publishes ports 80 and 443. It gets a Let's Encrypt certificate
+# for every domain in the Caddyfile and forwards each one to its app over the "edge" network.
+name: edge
+
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Certificates. Keep these volumes, or Let's Encrypt rate limits can bite on rebuilds.
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - edge
+
+networks:
+  edge:
+    external: true
+
+volumes:
+  caddy_data:
+  caddy_config:
