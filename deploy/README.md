@@ -97,12 +97,17 @@ type $env:USERPROFILE\.ssh\id_ed25519.pub | ssh root@YOUR_SERVER_IP "mkdir -p /h
 
 Check that this works **before** the next step: `ssh deploy@YOUR_SERVER_IP` must log in without a password.
 
-Then turn off password and root logins (on the server):
+Then turn off password and root logins (on the server, logged in as `deploy`):
 
 ```bash
-sudo sed -i 's/^#\?PasswordAuthentication .*/PasswordAuthentication no/; s/^#\?PermitRootLogin .*/PermitRootLogin no/' /etc/ssh/sshd_config
+printf 'PasswordAuthentication no\nKbdInteractiveAuthentication no\nPermitRootLogin no\n' | sudo tee /etc/ssh/sshd_config.d/00-hardening.conf
 sudo systemctl restart ssh
+sudo sshd -T | grep -E '^(passwordauthentication|permitrootlogin)'
 ```
+
+The last command must print `passwordauthentication no` and `permitrootlogin no`. The settings go in a
+`00-` file because Ubuntu 24.04 images often ship `50-cloud-init.conf` with `PasswordAuthentication yes`,
+and SSH uses the first value it reads, so an edit to the main `sshd_config` would be ignored.
 
 > If you ever lock yourself out, hPanel's **Browser terminal** still works.
 
