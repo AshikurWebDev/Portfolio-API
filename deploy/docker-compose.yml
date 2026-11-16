@@ -1,12 +1,12 @@
 # Production stack for one VPS (e.g. Hostinger KVM). See deploy/README.md.
 #
 # Lives in the backend repository. The website image is built from the frontend repository,
-# which must be cloned next to this one (WEB_DIR in .env, default ../../portfolio-web):
+# which must be cloned next to this one (WEB_DIR in .env, default ../../Portfolio-Web):
 #
-#   /opt/portfolio/portfolio-api   <- this repository
-#   /opt/portfolio/portfolio-web   <- frontend repository
+#   /opt/portfolio/Portfolio-API   <- this repository
+#   /opt/portfolio/Portfolio-Web   <- frontend repository
 #
-#   cd portfolio-api/deploy
+#   cd Portfolio-API/deploy
 #   cp .env.example .env      then fill in the values
 #   docker compose up -d --build
 #
@@ -52,7 +52,7 @@ services:
   web:
     build:
       # The frontend repository (Dockerfile and Caddyfile live there).
-      context: ${WEB_DIR:-../../portfolio-web}
+      context: ${WEB_DIR:-../../Portfolio-Web}
       args:
         VITE_SITE_URL: https://${DOMAIN:?set DOMAIN in deploy/.env}
         VITE_API_URL: https://${DOMAIN}

@@ -27,9 +27,9 @@ inside the Docker network.
 | `Dockerfile` (frontend repo) | Builds the React app, then packs it into a Caddy image |
 | `Caddyfile` (frontend repo) | HTTPS, proxy rules, SPA fallback, cache headers, 20 MB upload limit |
 
-The site lives in two repositories: this backend repository (`portfolio-api`) and the frontend
-repository (`portfolio-web`). On the server they are cloned side by side; the compose file builds
-the website from `WEB_DIR` (default `../../portfolio-web`).
+The site lives in two repositories: this backend repository (`Portfolio-API`) and the frontend
+repository (`Portfolio-Web`). On the server they are cloned side by side; the compose file builds
+the website from `WEB_DIR` (default `../../Portfolio-Web`).
 
 ## 1. Buy and prepare the VPS
 
@@ -61,8 +61,8 @@ Google Cloud Console → APIs & Services → Credentials → your OAuth client �
 
 ```bash
 mkdir -p /opt/portfolio && cd /opt/portfolio
-git clone https://github.com/AshikurWebDev/portfolio-api.git
-git clone https://github.com/AshikurWebDev/portfolio-web.git
+git clone https://github.com/AshikurWebDev/Portfolio-API.git
+git clone https://github.com/AshikurWebDev/Portfolio-Web.git
 ```
 
 Use your real repository URLs if you named them differently, and set `WEB_DIR` in `.env` to match.
@@ -70,7 +70,7 @@ Use your real repository URLs if you named them differently, and set `WEB_DIR` i
 ## 5. Fill in the settings
 
 ```bash
-cd /opt/portfolio/portfolio-api/deploy
+cd /opt/portfolio/Portfolio-API/deploy
 cp .env.example .env
 nano .env
 ```
@@ -82,7 +82,7 @@ nano .env
 | `JWT_SIGNING_KEY` | `openssl rand -base64 48` (at least 32 characters) |
 | `GOOGLE_CLIENT_ID` | same id as `VITE_GOOGLE_CLIENT_ID` in `web/.env` |
 | `ADMIN_EMAIL` | the Gmail address allowed into `/admin` |
-| `WEB_DIR` | path to the frontend repository from `deploy/` (default `../../portfolio-web`) |
+| `WEB_DIR` | path to the frontend repository from `deploy/` (default `../../Portfolio-Web`) |
 
 `.env` holds secrets. Keep it on the server only.
 
@@ -109,8 +109,8 @@ draft posts, and upload designs in the Design tab.
 ## Updating the site
 
 ```bash
-cd /opt/portfolio/portfolio-web && git pull
-cd /opt/portfolio/portfolio-api && git pull
+cd /opt/portfolio/Portfolio-Web && git pull
+cd /opt/portfolio/Portfolio-API && git pull
 cd deploy && docker compose up -d --build
 ```
 

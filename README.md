@@ -4,7 +4,7 @@ The backend of my developer portfolio: an **ASP.NET Core (.NET 10) Web API** wit
 (clean architecture) design, PostgreSQL through EF Core, Google sign-in with JWT and rotating refresh
 tokens, an admin API, image compression, and an **MCP server** that lets AI agents draft blog posts.
 
-The website that uses it: **[portfolio-web](https://github.com/AshikurWebDev/portfolio-web)** (React 19 + TypeScript).
+The website that uses it: **[Portfolio-Web](https://github.com/AshikurWebDev/Portfolio-Web)** (React 19 + TypeScript).
 
 ## Contents
 
@@ -122,8 +122,8 @@ Example: `PUT /api/admin/skills/{id}`
 Requirements: .NET SDK 10, Docker Desktop.
 
 ```bash
-git clone https://github.com/AshikurWebDev/portfolio-api.git
-cd portfolio-api
+git clone https://github.com/AshikurWebDev/Portfolio-API.git
+cd Portfolio-API
 
 docker compose up -d                 # PostgreSQL 18 on localhost:55432
 dotnet tool restore                  # dotnet-ef (local tool)
@@ -150,7 +150,7 @@ missing, so restarts never duplicate anything.
 | http://localhost:5180/health | Health check |
 | `src/Portfolio.Api/Portfolio.Api.http` | A ready request for every endpoint (VS Code REST Client, Visual Studio, Rider) |
 
-To run the website against it, see [portfolio-web](https://github.com/AshikurWebDev/portfolio-web).
+To run the website against it, see [Portfolio-Web](https://github.com/AshikurWebDev/Portfolio-Web).
 
 ## API overview
 
