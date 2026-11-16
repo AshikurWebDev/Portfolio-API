@@ -7,6 +7,7 @@ sites** (for example a second app on its own domain). Every command is meant to 
 - **Part B** puts the portfolio online.
 - **Part C** adds another site later.
 - **Part D** covers day-to-day management: a dashboard, updates and backups.
+- **Part E** (optional) puts Cloudflare in front: hidden server IP, DDoS protection, CDN.
 
 ## How it fits together
 
@@ -142,7 +143,8 @@ docker network create edge
 cd /opt/apps
 git clone https://github.com/AshikurWebDev/Portfolio-API.git
 git clone https://github.com/AshikurWebDev/Portfolio-Web.git
-cp Portfolio-API/deploy/edge/docker-compose.yml Portfolio-API/deploy/edge/Caddyfile.example /opt/edge/
+cp Portfolio-API/deploy/edge/docker-compose.yml Portfolio-API/deploy/edge/Caddyfile*.example /opt/edge/
+mkdir -p /opt/edge/certs && chmod 700 /opt/edge/certs
 cd /opt/edge && cp Caddyfile.example Caddyfile && nano Caddyfile
 ```
 
@@ -300,6 +302,88 @@ Also turn on Hostinger's weekly backups and take a **snapshot** in hPanel before
 
 ---
 
+## Part E. Cloudflare in front (optional, recommended)
+
+Cloudflare's free plan hides the server's IP address, absorbs attacks, and serves static files from
+nearby data centres. Do Part B first (the site working on its own), then switch.
+
+Two things must change, and `edge/Caddyfile.cloudflare.example` handles both:
+
+- **Certificates.** Behind Cloudflare, Let's Encrypt renewals can fail. A free **Cloudflare Origin
+  Certificate** (valid 15 years) on the server avoids that.
+- **Visitor IPs.** Requests now come from Cloudflare. The edge reads the real visitor IP from the
+  `CF-Connecting-IP` header, but only from Cloudflare's own addresses, so nobody can fake it. Without
+  this, every visitor would share one spam limit on the contact form. (Tested: 7 visitors via Cloudflare
+  all pass; a faked header from elsewhere is ignored and the limit applies.)
+
+### E1. Add the site to Cloudflare
+
+1. Create a free account at cloudflare.com → **Add a site** → `ashikdev.tech` → **Free** plan.
+2. Cloudflare copies your DNS records. Check that `A @` and `A www` point at the VPS IP and that both
+   show the **orange cloud** (Proxied). Delete any record pointing at old Hostinger parking IPs.
+3. Cloudflare shows two nameservers. In hPanel → **Domains** → `ashikdev.tech` → **DNS / Nameservers** →
+   **Change nameservers**, enter those two. Cloudflare emails you when the switch is active (minutes to hours).
+
+### E2. Cloudflare settings
+
+| Where | Setting |
+|-------|---------|
+| SSL/TLS → Overview | Encryption mode **Full (strict)** |
+| SSL/TLS → Edge Certificates | **Always Use HTTPS**: on · **Minimum TLS**: 1.2 |
+| Network | **WebSockets**: on (the live updates need it; on by default) |
+| Speed → Optimization | **Rocket Loader**: off (it rewrites JavaScript and can break React) |
+| Scrape Shield | **Email Address Obfuscation**: off (it rewrites the contact links) |
+| Caching | Leave the defaults: Cloudflare caches the hashed `/assets/` files and never the API |
+
+### E3. Install the Origin Certificate on the server
+
+1. Cloudflare → **SSL/TLS** → **Origin Server** → **Create Certificate** → keep "RSA (2048)" and the
+   hostnames `ashikdev.tech, *.ashikdev.tech` → validity **15 years** → **Create**.
+2. On the server, paste the two blocks into files (Ctrl+Shift+V pastes in most terminals):
+
+   ```bash
+   nano /opt/edge/certs/origin.pem     # paste "Origin Certificate", save
+   nano /opt/edge/certs/origin.key     # paste "Private Key", save
+   chmod 600 /opt/edge/certs/origin.key
+   ```
+
+   The private key is shown only once. Keep a copy in your password manager, never in Git.
+3. Switch the edge to the Cloudflare version and restart it:
+
+   ```bash
+   cd /opt/edge
+   cp Caddyfile Caddyfile.letsencrypt.bak
+   cp Caddyfile.cloudflare.example Caddyfile
+   docker compose up -d --force-recreate
+   ```
+
+4. Check: `https://ashikdev.tech` loads with a padlock, and `curl -sI https://ashikdev.tech | grep -i cf-ray`
+   prints a `cf-ray` line (traffic now goes through Cloudflare).
+
+### E4. Optional: only Cloudflare may reach the server
+
+DNS now shows Cloudflare's IPs, but someone who knows the server IP could still connect directly.
+**Authenticated Origin Pulls** makes Cloudflare present a client certificate that the edge requires:
+
+1. Cloudflare → **SSL/TLS** → **Origin Server** → **Authenticated Origin Pulls**: on.
+2. On the server:
+
+   ```bash
+   curl -o /opt/edge/certs/cloudflare-aop-ca.pem https://developers.cloudflare.com/ssl/static/authenticated_origin_pull_ca.pem
+   ```
+
+3. In `/opt/edge/Caddyfile`, remove the `#` from the three `client_auth` lines, then
+   `docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile`.
+
+Turn it on in Cloudflare **before** reloading, or the site stops answering.
+
+### Going back
+
+`cp Caddyfile.letsencrypt.bak Caddyfile && docker compose up -d --force-recreate`, then set the DNS
+records to the grey cloud (DNS only).
+
+---
+
 ## Single-site setup (no edge proxy)
 
 If this server will only ever host the portfolio, skip A7 and the shared file: the website container
@@ -317,6 +401,7 @@ cd /opt/apps/Portfolio-API/deploy && docker compose up -d --build
 | `docker-compose.shared.yml` | Shared-server mode: no published ports, joins the `edge` network as `portfolio-web` |
 | `.env.example` | Settings to copy into `.env` |
 | `edge/docker-compose.yml`, `edge/Caddyfile.example` | The edge proxy for a multi-site server (copied to `/opt/edge`) |
+| `edge/Caddyfile.cloudflare.example` | The same edge behind Cloudflare: Origin Certificate, real visitor IPs, optional origin lock |
 
 ## Tested
 

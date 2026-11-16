@@ -23,3 +23,6 @@ appsettings.*.local.json
 # Local tool output
 .playwright-mcp/
 TestResults/
+
+# Cloudflare Origin Certificates on the server (never commit private keys)
+deploy/edge/certs/

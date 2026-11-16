@@ -1,0 +1,58 @@
+# Edge Caddyfile for sites behind Cloudflare (orange cloud, SSL mode "Full (strict)").
+# Use this instead of Caddyfile.example: copy it to Caddyfile. See deploy/README.md, "Cloudflare".
+#
+# What is different from the plain version:
+#   1. Certificates: a free Cloudflare Origin Certificate (15 years) in ./certs instead of
+#      Let's Encrypt, so renewals never depend on Cloudflare's proxy letting a challenge through.
+#   2. Visitor IPs: requests now arrive from Cloudflare. The real visitor IP is read from the
+#      CF-Connecting-IP header, but ONLY when the request comes from a Cloudflare address below.
+#      Without this, every visitor would share one rate-limit bucket in the API.
+#   3. Optional origin lock: Authenticated Origin Pulls, so only Cloudflare can talk to this server.
+#
+# Cloudflare's ranges change rarely; check https://www.cloudflare.com/ips/ now and then.
+# List copied on 2026-11-16.
+
+{
+	servers {
+		trusted_proxies static 173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 141.101.64.0/18 108.162.192.0/18 190.93.240.0/20 188.114.96.0/20 197.234.240.0/22 198.41.128.0/17 162.158.0.0/15 104.16.0.0/13 104.24.0.0/14 172.64.0.0/13 131.0.72.0/22 2400:cb00::/32 2606:4700::/32 2803:f800::/32 2405:b500::/32 2405:8100::/32 2a06:98c0::/29 2c0f:f248::/32
+		client_ip_headers CF-Connecting-IP
+	}
+}
+
+# Shared settings for every Cloudflare-proxied site on this server.
+(cloudflare) {
+	tls /certs/origin.pem /certs/origin.key {
+		# Optional origin lock (Authenticated Origin Pulls). Turn it on in Cloudflare first
+		# (SSL/TLS -> Origin Server -> Authenticated Origin Pulls), download the CA file into
+		# ./certs, then remove the # from the three lines below and reload Caddy.
+		# client_auth {
+		# 	mode require_and_verify
+		# 	trust_pool file /certs/cloudflare-aop-ca.pem
+		# }
+	}
+	encode zstd gzip
+}
+
+# Portfolio
+ashikdev.tech {
+	import cloudflare
+	reverse_proxy portfolio-web:80 {
+		# Hand the site one value: the real visitor IP worked out above.
+		header_up X-Forwarded-For {client_ip}
+	}
+}
+
+www.ashikdev.tech {
+	import cloudflare
+	redir https://ashikdev.tech{uri} permanent
+}
+
+# Educatory ERP: needs its own Origin Certificate if it is a different domain
+# (put the files in ./certs under other names and point a second snippet at them).
+# educatory-example.com {
+# 	tls /certs/educatory-origin.pem /certs/educatory-origin.key
+# 	encode zstd gzip
+# 	reverse_proxy educatory-web:80 {
+# 		header_up X-Forwarded-For {client_ip}
+# 	}
+# }
